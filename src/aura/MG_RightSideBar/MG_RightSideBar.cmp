@@ -1,0 +1,173 @@
+<!--
+ - Created by BRITENET on 02.09.2019.
+ -->
+
+<aura:component description="MG_RightSideBar" implements="flexipage:availableForAllPageTypes"
+                controller="MG_MainContainerController">
+    <aura:attribute name="activeSections" type="List" default=""/>
+    <aura:attribute name="activeSectionsMessage" type="String" default=""/>
+    <aura:attribute name="movie" type="MG_MovieResults.Results" default=""/>
+    <aura:attribute name="randomMovies" type="MG_MovieResults.Results[]" default=""/>
+    <aura:attribute name="person" type="MG_PeopleResults.Results" default=""/>
+    <aura:attribute name="genres" type="String[]"/>
+    <aura:attribute name="review" type="MG_MovieReview__c"/>
+    <aura:attribute access="private" name="recordError" type="String"/>
+    <aura:attribute type="Boolean" name="addedRecord" default="false"/>
+    <aura:attribute name="mediaType" type="String" default="Random"/>
+    <aura:attribute name="reviewed" type="Boolean" default="false"/>
+    <aura:registerEvent name="sortResults" type="c:MG_SortResults"/>
+    <aura:registerEvent name="showMovieFromRandom" type="c:MG_ShowMovieFromRandom"/>
+    <aura:handler event="c:MG_FindResult" action="{!c.changeResults}"/>
+    <aura:handler event="c:MG_ShowMovie" action="{!c.showMovie}"/>
+    <aura:handler event="c:MG_ShowPerson" action="{!c.showPeople}"/>
+    <aura:handler name="init" action="{!c.onInit}" value="{!this}"/>
+    <aura:if isTrue="{!v.mediaType!='Timeline'}">
+        <lightning:card title="{!v.mediaType}">
+            <aura:if isTrue="{!and(empty(v.movie),empty(v.person))}">
+                <aura:if isTrue="{!v.mediaType=='person'}">
+                    <lightning:accordion
+                            allowMultipleSectionsOpen="true"
+                            onsectiontoggle="{! c.handleSectionToggle }"
+                    >
+                        <lightning:accordionSection name="B" label="Filter By">
+                            <lightning:input name="input1" label="Name:"/>
+                            <lightning:input type='number' name="" label="Minimum popularity:"/>
+                        </lightning:accordionSection>
+                        <lightning:accordionSection name="C" label="Sort By">
+                            <lightning:button variant="Neutral" label="Name" onclick="{!c.sortPersonByName}"/>
+                            <lightning:button variant="Neutral" label="Popularity"
+                                              onclick="{!c.sortPersonByPopularity}"/>
+                        </lightning:accordionSection>
+                    </lightning:accordion>
+                </aura:if>
+                <aura:if isTrue="{!v.mediaType=='movie'}">
+                    <lightning:accordion
+                            allowMultipleSectionsOpen="true"
+                            onsectiontoggle="{! c.handleSectionToggle }">
+                        <lightning:accordionSection name="B" label="Filter By">
+                            <lightning:input name="input1" label="Title:"/>
+                            <lightning:input type='date' name="" label="Released before:"/>
+                            <lightning:input type='date' name="" label="Released after:"/>
+                        </lightning:accordionSection>
+                        <lightning:accordionSection name="C" label="Sort By">
+                            <lightning:button variant="Neutral" label="Title" onclick="{!c.sortMovieByTitle}"/>
+                            <lightning:button variant="Neutral" label="Release date" onclick="{!c.sortMovieByDate}"/>
+                            <lightning:button variant="Neutral" label="Popularity"
+                                              onclick="{!c.sortMovieByPopularity}"/>
+                        </lightning:accordionSection>
+                    </lightning:accordion>
+                </aura:if>
+
+            </aura:if>
+            <aura:if isTrue="{!!empty(v.movie)}">
+                <ul class="slds-list--vertical" style="padding-left: 10px;">
+                    <li class="slds-item slds-section-title">Release Date: {!v.movie.release_date}</li>
+                    <li class="slds-item slds-section-title">Genres:
+                        <aura:iteration items="{!v.movie.genres}" var="gen">
+                            <lightning:badge label="{!gen.name}"/>
+                        </aura:iteration>
+                    </li>
+                    <li class="slds-item slds-section-title">Popularity: {!v.movie.popularity}</li>
+                    <li class="slds-item slds-section-title">Score({!v.movie.vote_count}):
+                        <c:MG_FiveStarRating value="{!v.movie.vote_average}" readonly="{!true}"/>
+                    </li>
+                    <li class="slds-item slds-section-title">Runtime: {!v.movie.runtime}min</li>
+                    <li class="slds-item slds-section-title">Revenue:
+                        <ui:outputCurrency value="{!v.movie.revenue}" currencyCode="$"/>
+                    </li>
+                    <li class="slds-item slds-section-title">Budget:
+                        <ui:outputCurrency value="{!v.movie.budget}" currencyCode="$"/>
+                    </li>
+                </ul>
+
+            </aura:if>
+            <aura:if isTrue="{!!empty(v.person)}">
+                <ul class="slds-list--vertical" style="padding-left: 10px;">
+                    <li class="slds-item slds-section-title">Birthday:
+                        <ui:outputDate value="{!v.person.birthday}" format="DD-MM-YYYY"/>
+                    </li>
+                    <aura:if isTrue="{!!empty(v.person.deathday)}">
+                        <li class="slds-item slds-section-title">Deathday:
+                            <ui:outputDate value="{!v.person.deathday}" format="DD-MM-YYYY"/>
+                        </li>
+                    </aura:if>
+                    <li class="slds-item slds-section-title">Popularity: {!v.person.popularity}</li>
+                    <li class="slds-item slds-section-title">From: {!v.person.place_of_birth}</li>
+
+                    <aura:if isTrue="{!!empty(v.person.homepage)}">
+                        <li class="slds-item slds-section-title">Homepage: <a href="{!v.person.homepage}">Link</a></li>
+                    </aura:if>
+                </ul>
+            </aura:if>
+            <aura:if isTrue="{!and(empty(v.movie),empty(v.person),v.mediaType=='Random',v.mediaType!='Reviews')}">
+                <lightning:layout multipleRows="true">
+                    <aura:iteration items="{!v.randomMovies}" var="movie">
+                        <lightning:layoutItem flexibility="auto" padding="around-small" size="4">
+                            <div class="custom-box">
+                                <lightning:tile>
+                                    <aura:set attribute="media">
+                                        <aura:if isTrue="{!movie.isBlackListed}">
+                                            <img
+                                                    src="{!$Resource.BlockedContent}"
+                                                    style="height: auto;max-width: 28%" alt="Missing Pic"/>
+                                        </aura:if>
+                                        <aura:if isTrue="{!!movie.isBlackListed}">
+                                            <img onclick="{!c.goToMovie}" data-id="{!movie.id}"
+                                                 src="{!if(movie.poster_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+movie.poster_path)}"
+                                                 style="height: auto;max-width: 28%" alt="Missing Pic"/>
+                                        </aura:if>
+                                        <!--                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>-->
+                                    </aura:set>
+                                </lightning:tile>
+                            </div>
+                        </lightning:layoutItem>
+                    </aura:iteration>
+                </lightning:layout>
+            </aura:if>
+        </lightning:card>
+
+        <aura:if isTrue="{!and(!empty(v.movie),empty(v.person),v.mediaType=='Details',!!v.addedRecord)}">
+            <lightning:card title="{!if(!v.reviewed,'Leave a Review','Already Reviewed')}">
+                <aura:if isTrue="{!v.reviewed}">
+                </aura:if>
+                <aura:if isTrue="{!!v.reviewed}">
+                    <lightning:accordion
+                            allowMultipleSectionsOpen="true"
+                    >
+                        <lightning:accordionSection name="B" label="Show form">
+                            <force:recordData aura:id="service"
+                                              fields="Comment__c, Rating__c, Movie_Id__c,Image_Path__c"
+                                              targetError="{!v.recordError}"
+                                              targetFields="{!v.review}"
+                                              recordUpdated="{!c.onRecordUpdated}"
+                            />
+                            <lightning:layout multipleRows="true">
+                                <lightning:layoutItem size="12" padding="around-small">
+                                    <label class="slds-form-element__label" for="input-id-01">Description</label>
+                                    <lightning:inputRichText value="{!v.review.Comment__c}"
+                                                             disabledCategories="FORMAT_FONT"/>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="12" padding="around-small">
+                                    <label class="slds-form-element__label" for="input-id-01">Rating</label>
+                                    <ul class="slds-post__footer-actions-list slds-list_horizontal">
+                                        <li class="slds-col slds-item slds-m-right_medium">
+                                            <c:MG_FiveStarRating value="{!v.review.Rating__c}" readonly="{!false}"/>
+                                        </li>
+                                    </ul>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="12" class="slds-align--absolute-center">
+                                    <lightning:button iconName="utility:save" label="Send" onclick="{!c.onSave}"/>
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                        </lightning:accordionSection>
+                    </lightning:accordion>
+                </aura:if>
+            </lightning:card>
+        </aura:if>
+    </aura:if>
+    <aura:if isTrue="{!v.mediaType=='Timeline'}">
+        <lightning:card title="Timeline">
+                <c:MG_UserTimeline/>
+        </lightning:card>
+    </aura:if>
+</aura:component>

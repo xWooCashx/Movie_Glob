@@ -1,0 +1,67 @@
+<!--
+ - Created by BRITENET on 05.09.2019.
+ -->
+
+<aura:component description="MG_MovieImagesCarousel">
+
+    <aura:attribute name="images" type="MG_MovieImages.Posters[]" />
+    <aura:attribute name="activeIndex" type="String" default="0"/>
+    <div class="slds-carousel" >
+        <div class="slds-carousel__stage">
+            <div class="slds-carousel__panels" style="transform:translateX(0%)">
+                <aura:iteration var="image" items="{!v.images}" indexVar="index">
+                    <aura:if isTrue="{!index!=5}">
+                        <aura:if isTrue="{!(''+index)==v.activeIndex}">
+                            <div class="slds-carousel__panel">
+                                <div id="{!'content-id-0'+index}" role="tabpanel"
+                                     aria-hidden="{!(''+index)!=v.activeIndex}"
+                                     aria-labelledby="{!'indicator-id-0'+index}">
+                                    <a href="javascript:void(0);"
+                                       class="slds-carousel__panel-action slds-text-link_reset"
+                                       tabindex="{!if((''+index)==v.activeIndex,'0','1')}">
+                                        <div class="slds-carousel__image">
+                                            <img src="{!if(image.file_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/original'+image.file_path)}"
+                                                onload="console.log('startws')" alt="Visit App Exchange"/>
+                                        </div>
+<!--                                        <div class="slds-carousel__content">-->
+<!--                                            <h2 class="slds-carousel__content-title">{!(''+index)==v.activeIndex}</h2>-->
+<!--                                            <p>{!index}.</p>-->
+<!--                                        </div>-->
+                                    </a>
+                                </div>
+                            </div>
+                        </aura:if>
+                    </aura:if>
+                </aura:iteration>
+            </div>
+            <ul class="slds-carousel__indicators" role="tablist">
+                <aura:iteration var="image" items="{!v.images}" indexVar="index">
+                    <aura:if isTrue="{!index!=5}">
+                        <aura:if isTrue="{!(''+index)!=v.activeIndex}">
+                            <li class="slds-carousel__indicator" role="presentation">
+                                <a id="{!'indicator-id-0'+index}" class="slds-carousel__indicator-action"
+                                   onclick="{!c.changeActive}"
+                                   data-index="{!index}"
+                                   href="javascript:void(0);"
+                                   role="tab" tabindex="-1" aria-selected="false"
+                                   aria-controls="{!'content-id-0'+index}"
+                                   title="{!index}">
+                                </a>
+                            </li>
+                        </aura:if>
+                        <aura:if isTrue="{!(''+index)==v.activeIndex}">
+                            <li class="slds-carousel__indicator" role="presentation">
+                                <a id="{!'indicator-id-0'+index}" href="javascript:void(0);" onclick="{!c.changeActive}"
+                                   data-index="{!index}"
+                                   class="slds-carousel__indicator-action slds-is-active"
+                                   role="tab" tabindex="0" aria-selected="true"
+                                   aria-controls="{!'content-id-0'+index}" title="{!index}">
+                                </a>
+                            </li>
+                        </aura:if>
+                    </aura:if>
+                </aura:iteration>
+            </ul>
+        </div>
+    </div>
+</aura:component>

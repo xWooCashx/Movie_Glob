@@ -1,0 +1,10 @@
+<!--
+ - Created by BRITENET on 07.09.2019.
+ -->
+
+<aura:documentation>
+    <aura:description>Documentation for MG_RightSideBar</aura:description>
+    <aura:example name="MG_RightSideBar" ref="MG_RightSideBar" label="MG_RightSideBar">
+        Example for MG_RightSideBar
+    </aura:example>
+</aura:documentation>

@@ -1,0 +1,8 @@
+<!--
+ - Created by BRITENET on 02.09.2019.
+ -->
+
+<aura:event type="APPLICATION" description="MG_SortResults">
+    <aura:attribute name="sortBy" type="String" />
+    <aura:attribute name="sortingType" type="Integer" />
+</aura:event>

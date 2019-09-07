@@ -1,0 +1,255 @@
+<!--
+ - Created by BRITENET on 03.09.2019.
+ -->
+
+<aura:component description="MG_MovieDetails" controller="MG_MainContainerController">
+    <aura:attribute name="id" type="Integer" required="true"/>
+    <aura:attribute name="movie" type="MG_MovieDetails"/>
+    <aura:attribute name="movieCastAndCrew" type="MG_MovieCastCrew" default=""/>
+    <aura:attribute name="reviews" type="MG_MovieReview__c[]" default=""/>
+    <aura:attribute name="images" type="MG_MovieImages" default=""/>
+    <aura:attribute name="liked" type="Boolean"/>
+    <aura:attribute name="blocked" type="Boolean"/>
+    <aura:attribute name="backdrop_path" type="String"/>
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    <aura:registerEvent name="showMovie" type="c:MG_ShowMovie"/>
+    <aura:registerEvent name="showPersonFromCast" type="c:MG_ShowPersonFromCast"/>
+
+    <aura:html tag="style">
+        #movie-container:before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        z-index: -1;
+
+        display: block;
+        background: grey
+        {!if(v.movie.fromDB==true,'url(\''+v.movie.backdrop_path+'\')','url(\'https://image.tmdb.org/t/p/w1400_and_h450_face'+v.backdrop_path
+        +'\')')}
+        no-repeat;
+        background-position:35% 50%;
+        height:450px;
+        width:99%;
+
+        filter: opacity(100%) grayscale(85%) contrast(130%);
+        }
+
+
+        #movie-container:before {
+        position: absolute;
+        left: 0;
+        right: 0;
+        z-index: 0;
+        margin-left: 3px;
+        margin-right: 3px;
+        }
+        #movie-container{
+        }
+        .con h1{
+        margin: 0;
+        padding: 0;
+        font-size: 2.4em;
+        line-height: 1.1em;
+        font-weight: 700;
+        display: inline-block;
+        }
+        .con h3{
+        font-size: 1.4em;
+        }
+        .blacked{
+        }
+    </aura:html>
+    <aura:attribute type="Boolean" name="isLoading" default="false"/>
+    <!--    <aura:if isTrue="{!v.isLoading}">-->
+    <!--        <lightning:spinner alternativeText="Loading" size="large"/>-->
+    <!--    </aura:if>-->
+    <!--    <div id="{!if(!empty(v.movie.backdrop_path),'movie-container','noid')}">-->
+    <!--&lt;!&ndash;    </div>&ndash;&gt;-->
+    <!--    <div style="background-color: rgba(0,0,0, 0.4);z-index: 2;height:450px;transform:translate(0, -100%)">-->
+    <div style="position:absolute;right:5%;top:5%;">
+        <lightning:buttonIconStateful size="large" iconName="custom:custom1" selected="{!v.liked}"
+                                      onclick="{!c.like}" alternativeText="Like"/>
+        <lightning:buttonIconStateful size="large" iconName="utility:ban" selected="{!v.blocked}"
+                                      onclick="{!c.block}" alternativeText="Block"/>
+    </div>
+    <lightning:tabset>
+        <lightning:tab label="Overview">
+
+            <div id="{!if(!empty(v.movie.backdrop_path),'movie-container','noid')}">
+                <div class='con'
+                     style="position:relative;padding: 10px;background-color: rgba(0,25,25, 0.75);color:white ">
+                    <lightning:layout class="blacked">
+                        <lightning:layoutItem>
+                            <aura:if isTrue="{!v.movie.fromDB}">
+                                <img
+                                        src="{!if(v.movie.poster_path==null,$Resource.MG_DefaultImage,'https://britenet-training-apps-dev-ed.lightning.force.com/sfc/servlet.shepherd/version/download/'+v.movie.poster_path)}"
+                                        style="height: auto;max-width: 170px" alt="Missing Pic"/>
+
+                                <!--                                                            <img-->
+                                <!--                                                                    src="{!if(v.movie.poster_path==null,$Resource.MG_DefaultImage,if(v.movie.fromDB==true,v.movie.poster_path,'https://image.tmdb.org/t/p/w500'+v.movie.poster_path))}"-->
+                                <!--                                                                    style="height:430px;width:auto;max-width: 300px;border-radius: 10px;"-->
+                                <!--                                                                    alt="Missing Pic"/>-->
+                            </aura:if>
+
+                            <aura:if isTrue="{!!v.movie.fromDB}">
+                                <aura:if isTrue="{!empty(v.images)}">
+                                                                                                <img
+                                                                                                        src="{!if(v.movie.poster_path==null,$Resource.MG_DefaultImage,if(v.movie.fromDB==true,v.movie.poster_path,'https://image.tmdb.org/t/p/w500'+v.movie.poster_path))}"
+                                                                                                        style="height:430px;width:auto;max-width: 300px;border-radius: 10px;"
+                                                                                                        alt="Missing Pic"/>
+
+                                </aura:if>
+                                <aura:if isTrue="{!!empty(v.images)}">
+                                    <div style="height:430px;width:auto;max-width: 275px;border-radius: 10px;">
+                                        <c:MG_MovieImagesCarousel images="{!v.images.posters}"/>
+                                    </div>
+                                </aura:if>
+                            </aura:if>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-section">
+                            <ul class="slds-list--vertical" style="padding: 10px;">
+                                <li class="slds-item slds-section-title"><h1>{!v.movie.title}</h1></li>
+                                <li class="slds-item slds-chat-message__text"><h3>{!v.movie.tagline}</h3></li>
+                                <li class="slds-item slds-chat-message__text"><h3>{!v.movie.overview}</h3></li>
+                            </ul>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </div>
+            </div>
+            <!--            <c:MG_MovieImagesCarousel images="{!v.images.posters}"/>-->
+        </lightning:tab>
+        <lightning:tab label="Cast" onactive="{!c.loadCast}">
+            <lightning:layout multipleRows="true">
+                <aura:iteration items="{!v.movieCastAndCrew.cast_Z}" var="person">
+                    <lightning:layoutItem flexibility="auto" padding="around-small" size="3">
+                        <div class="custom-box">
+                            <lightning:tile label="{!person.name}">
+                                <aura:set attribute="media">
+                                    <img onclick="{!c.goToPerson}" data-id="{!person.id}"
+                                         src="{!if(person.profile_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+person.profile_path)}"
+                                         style="height: 100px;max-width: 67px;border-radius:5px;" alt="Missing Pic"/>
+                                </aura:set>
+                                <ul class="slds-vertical ">
+                                    <li class="slds-item">{!person.character}</li>
+                                </ul>
+                            </lightning:tile>
+                        </div>
+                    </lightning:layoutItem>
+                </aura:iteration>
+            </lightning:layout>
+        </lightning:tab>
+        <!--            <ul class="slds-has-dividers_bottom-space  ">-->
+        <!--                <aura:iteration items="{!v.movieCastAndCrew.cast_Z}" var="person">-->
+        <!--                    <li class="slds-item">-->
+        <!--                        <lightning:tile label="{!person.name}">-->
+        <!--                            <aura:set attribute="media">-->
+        <!--                                <img onclick="{!c.goToPerson}" data-id="{!person.id}"-->
+        <!--                                     src="{!if(person.profile_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+person.profile_path)}"-->
+        <!--                                     style="height: auto;max-width: 100px" alt="Missing Pic"/>-->
+
+        <!--                                &lt;!&ndash;                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>&ndash;&gt;-->
+        <!--                            </aura:set>-->
+        <!--                            <ul class="slds-vertical ">-->
+        <!--                                <li class="slds-item">Character: {!person.character}</li>-->
+        <!--                            </ul>-->
+        <!--                        </lightning:tile>-->
+        <!--                    </li>-->
+        <!--                </aura:iteration>-->
+        <!--            </ul>-->
+        <lightning:tab label="Reviews" onactive="{!c.loadReviews}">
+            <aura:if isTrue="{! not(empty(v.reviews))}">
+                <div class="slds-feed">
+                    <!--                    <ul class="slds-feed__list">-->
+                    <table class="slds-table  ">
+                        <tbody>
+                        <aura:iteration items="{!v.reviews}" var="review">
+                            <tr class="slds-hint-parent slds-feed__item">
+
+                                <!--                            <li class="slds-feed__item" >-->
+                                <article class="slds-post">
+                                    <header class="slds-post__header slds-media">
+                                        <div class="slds-media__figure">
+                                            <a href="javascript:void(0);"
+                                               class="slds-avatar  slds-avatar_large">
+                                                <img src="{!review.CreatedBy.SmallPhotoUrl}"/>
+                                            </a>
+                                        </div>
+                                        <div class="slds-media__body">
+                                            <div class="slds-grid slds-grid_align-spread slds-has-flexi-truncate">
+                                                <p>
+                                                    {!review.CreatedBy.Name +' &bull; '+review.CreatedBy.CompanyName+'
+                                                    &bull; '}
+                                                    <lightning:formattedDateTime value="{!review.CreatedDate}"/>
+                                                </p>
+                                            </div>
+                                            <p class="slds-text-body_small">
+                                                <c:MG_FiveStarRating value="{!review.Rating__c}" readonly="{!true}"/>
+                                            </p>
+                                        </div>
+
+                                    </header>
+                                    <div class="slds-post__content slds-text-longform">
+                                        <lightning:formattedRichText value="{!review.Comment__c}"/>
+                                    </div>
+                                    <footer class="slds-post__footer">
+                                        <ul class="slds-post__footer-actions-list slds-list_horizontal">
+                                            <li class="slds-col slds-item slds-m-right_medium">
+                                            </li>
+                                        </ul>
+                                    </footer>
+                                </article>
+                                <!--                            </li>-->
+                            </tr>
+                        </aura:iteration>
+                        </tbody>
+                    </table>
+                    <!--                    </ul>-->
+                </div>
+            </aura:if>
+        </lightning:tab>
+        <!--        <lightning:tab label="Crew">-->
+        <!--            <lightning:layout multipleRows="true">-->
+
+        <!--                <aura:iteration items="{!v.movieCastAndCrew.crew}" var="person">-->
+        <!--                    <lightning:layoutItem flexibility="auto" padding="around-small" size="4">-->
+        <!--                        <div class="custom-box">-->
+        <!--                            <lightning:tile label="{!person.name}">-->
+        <!--                                <aura:set attribute="media">-->
+        <!--                                    <img onclick="{!c.goToPerson}" data-id="{!person.id}"-->
+        <!--                                         src="{!if(person.profile_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+person.profile_path)}"-->
+        <!--                                         style="height: auto;max-width: 100px" alt="Missing Pic"/>-->
+
+        <!--                                    &lt;!&ndash;                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>&ndash;&gt;-->
+        <!--                                </aura:set>-->
+        <!--                                <ul class="slds-vertical ">-->
+        <!--                                    <li class="slds-item">Department: {!person.department}</li>-->
+        <!--                                    <li class="slds-item">Job: {!person.job}</li>-->
+        <!--                                </ul>-->
+        <!--                            </lightning:tile>-->
+        <!--                        </div>-->
+        <!--                    </lightning:layoutItem>-->
+        <!--                </aura:iteration>-->
+        <!--            </lightning:layout>-->
+        <!--&lt;!&ndash;            <ul class="slds-has-dividers_bottom-space">&ndash;&gt;-->
+        <!--&lt;!&ndash;                <aura:iteration items="{!v.movieCastAndCrew.crew}" var="person">&ndash;&gt;-->
+        <!--&lt;!&ndash;                    <li class="slds-item">&ndash;&gt;-->
+        <!--&lt;!&ndash;                        <lightning:tile label="{!person.name}">&ndash;&gt;-->
+        <!--&lt;!&ndash;                            <aura:set attribute="media">&ndash;&gt;-->
+        <!--&lt;!&ndash;                                <img onclick="{!c.goToPerson}" data-id="{!person.id}"&ndash;&gt;-->
+        <!--&lt;!&ndash;                                     src="{!if(person.profile_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+person.profile_path)}"&ndash;&gt;-->
+        <!--&lt;!&ndash;                                     style="height: auto;max-width: 100px" alt="Missing Pic"/>&ndash;&gt;-->
+
+        <!--&lt;!&ndash;                                &lt;!&ndash;                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;                            </aura:set>&ndash;&gt;-->
+        <!--&lt;!&ndash;                            <ul class="slds-vertical ">&ndash;&gt;-->
+        <!--&lt;!&ndash;                                <li class="slds-item">Department: {!person.department}</li>&ndash;&gt;-->
+        <!--&lt;!&ndash;                                <li class="slds-item">Job: {!person.job}</li>&ndash;&gt;-->
+        <!--&lt;!&ndash;                            </ul>&ndash;&gt;-->
+        <!--&lt;!&ndash;                        </lightning:tile>&ndash;&gt;-->
+        <!--&lt;!&ndash;                    </li>&ndash;&gt;-->
+        <!--&lt;!&ndash;                </aura:iteration>&ndash;&gt;-->
+        <!--&lt;!&ndash;            </ul>&ndash;&gt;-->
+        <!--        </lightning:tab>-->
+    </lightning:tabset>
+</aura:component>

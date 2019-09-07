@@ -1,0 +1,52 @@
+<!--
+ - Created by BRITENET on 06.09.2019.
+ -->
+
+<aura:component description="MG_ImageFileUpload" controller="MG_MainContainerController">
+
+    <aura:attribute name="movieId" type="String"/>
+
+    <aura:attribute name="accept" type="List" default="['.jpg', '.jpeg']"/>
+    <aura:attribute name="multiple" type="Boolean" default="true"/>
+    <aura:attribute name="disabled" type="Boolean" default="false"/>
+    <aura:attribute name="message" type="String" default="Drag profile picture here"/>
+    <aura:registerEvent name="addedMovieImage" type="c:MG_AddedMovieImage"/>
+    <lightning:fileUpload name="fileUploader"
+                          label="Demo Upload"
+                          multiple="false"
+                          accept="{!v.accept}"
+                          disabled="{!v.disabled}"
+                          recordId="{!v.movieId}"
+                          onuploadfinished="{! c.handleUploadFinished }"/>
+
+
+    <!--    <aura:handler name="init" value="{!this}" action="{!c.onInit}" />-->
+
+    <!--    <div ondragover="{!c.onDragOver}" ondrop="{!c.onDrop}">-->
+    <!--        <img src="{!v.pictureSrc}"/>-->
+    <!--        <p>{!v.message}</p>-->
+    <!--    </div>-->
+
+    <!--    <div class="demo-only" style="max-width:320px">-->
+    <!--        <div class="slds-form-element">-->
+    <!--            <span class="slds-form-element__label" id="file-selector-primary-label">Attachment</span>-->
+    <!--            <div class="slds-form-element__control">-->
+    <!--                <div class="slds-file-selector slds-file-selector_images">-->
+    <!--                    <div class="slds-file-selector__dropzone slds-has-drag-over">-->
+    <!--                        <input type="file" class="slds-file-selector__input slds-assistive-text" accept="image/*"-->
+    <!--                               id="file-upload-input-01" onchange="{!c.onChangeFile}"-->
+    <!--                               aria-labelledby="file-selector-primary-label file-selector-secondary-label"/>-->
+    <!--                        <label class="slds-file-selector__body" for="file-upload-input-01"-->
+    <!--                               id="file-selector-secondary-label">-->
+    <!--            <span class="slds-file-selector__button slds-button slds-button_neutral">-->
+    <!--              <span class="slds-button__icon slds-button__icon_left" aria-hidden="true">-->
+    <!--                <lightning:icon iconName="utility:upload"/>-->
+    <!--              </span>Upload Image</span>-->
+    <!--                            <span class="slds-file-selector__text slds-medium-show">or Drop Image</span>-->
+    <!--                        </label>-->
+    <!--                    </div>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
+</aura:component>

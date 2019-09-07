@@ -1,0 +1,26 @@
+<!--
+ - Created by BRITENET on 02.09.2019.
+ -->
+
+<aura:component description="MG_CustomPageTemplate" implements="lightning:appHomeTemplate">
+    <aura:attribute name="left" type="Aura.Component[]" />
+    <aura:attribute name="main" type="Aura.Component[]" />
+    <aura:attribute name="right" type="Aura.Component[]" />
+
+    <div>
+        <lightning:layout>
+            <lightning:layoutItem flexibility="grow"
+                                  class="slds-m-left_small">
+                    {!v.left}
+            </lightning:layoutItem>
+            <lightning:layoutItem size="{! $Browser.isDesktop ? '4' : '6' }"
+                                  class="slds-m-vertical_medium">
+                    {!v.main}
+            </lightning:layoutItem>
+            <lightning:layoutItem flexibility="grow"
+                                  class="slds-m-right_small">
+                    {!v.right}
+            </lightning:layoutItem>
+        </lightning:layout>
+    </div>
+</aura:component>

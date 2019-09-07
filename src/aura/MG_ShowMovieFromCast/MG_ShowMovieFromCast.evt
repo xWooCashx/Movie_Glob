@@ -1,0 +1,7 @@
+<!--
+ - Created by BRITENET on 04.09.2019.
+ -->
+
+<aura:event type="COMPONENT" description="MG_ShowMovieFromCast">
+    <aura:attribute name="movieId" type="String"/>
+</aura:event>

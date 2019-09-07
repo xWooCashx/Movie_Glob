@@ -1,0 +1,16 @@
+<!--
+ - Created by BRITENET on 02.09.2019.
+ -->
+
+<aura:component description="MG_SearchBar">
+    <aura:attribute name="issearching" type="Boolean" default="false"/>
+    <div onkeyup="{! c.handleKeyUp }">
+        <lightning:input
+                aura:id="enter-search"
+                name="enter-search"
+                label="Search when user hits the 'enter' key"
+                isLoading="{! v.issearching }"
+                type="search"
+        />
+    </div>
+</aura:component>

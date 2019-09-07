@@ -1,0 +1,7 @@
+<!--
+ - Created by BRITENET on 03.09.2019.
+ -->
+
+<aura:event type="APPLICATION" description="MG_ShowPerson">
+    <aura:attribute type="MG_PersonDetails" name="person"/>
+</aura:event>

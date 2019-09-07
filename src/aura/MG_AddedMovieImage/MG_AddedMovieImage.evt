@@ -1,0 +1,7 @@
+<!--
+ - Created by BRITENET on 07.09.2019.
+ -->
+
+<aura:event type="COMPONENT" description="MG_AddedMovieImage">
+<!--    <aura:attribute name="added" type="Boolean"/>-->
+</aura:event>

@@ -1,0 +1,8 @@
+<!--
+ - Created by BRITENET on 02.09.2019.
+ -->
+
+<aura:event type="APPLICATION" description="MG_FindResult">
+    <aura:attribute required="true" type="String" name="query"/>
+    <aura:attribute required="true" type="String" name="mediaType"/>
+</aura:event>

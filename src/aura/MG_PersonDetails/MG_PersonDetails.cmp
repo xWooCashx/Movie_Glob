@@ -1,0 +1,101 @@
+<!--
+ - Created by BRITENET on 03.09.2019.
+ -->
+
+<aura:component description="MG_PersonDetails" controller="MG_MainContainerController">
+    <aura:attribute name="id" type="Integer" required="true"/>
+    <aura:attribute name="person" type="MG_PersonDetails" default=""/>
+    <aura:attribute name="credits" type="MG_PersonCredits" default=""/>
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    <aura:registerEvent name="showMovieFromCast" type="c:MG_ShowMovieFromCast"/>
+
+    <lightning:tabset>
+        <lightning:tab label="Overview">
+            <div style="position:relative;left:10px;padding-left: 10px;">
+                <lightning:layout class="blacked">
+                    <lightning:layoutItem>
+                        <img
+                                src="{!if(v.person.profile_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+v.person.profile_path)}"
+                                style="height: 430px;width:auto;max-width: 300px;border-radius: 10px;" alt="Missing Pic"/>
+
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-section">
+                        <ul class="slds-list--vertical" style="padding-left: 10px;">
+                            <li class="slds-item slds-section-title">{!v.person.name}</li>
+                            <li class="slds-item slds-chat-message__text">{!v.person.biography}</li>
+                        </ul>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+        </lightning:tab>
+        <lightning:tab label="Cast">
+            <lightning:layout multipleRows="true">
+
+                <aura:iteration items="{!v.credits.cast_Z}" var="movie">
+                    <lightning:layoutItem flexibility="auto" padding="around-small" size="4">
+                        <div class="custom-box">
+                            <lightning:tile label="{!movie.title}">
+                                <aura:set attribute="media">
+                                    <img onclick="{!c.goToMovie}" data-id="{!movie.id}"
+                                         src="{!if(movie.poster_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+movie.poster_path)}"
+                                         style="height: auto;max-width: 100px" alt="Missing Pic"/>
+
+                                    <!--                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>-->
+                                </aura:set>
+                                <ul class="slds-vertical ">
+                                    <li class="slds-item">Character: {!movie.character}</li>
+                                    <li class="slds-item">Date: {!movie.release_date}</li>
+                                </ul>
+                            </lightning:tile>
+                        </div>
+                    </lightning:layoutItem>
+                </aura:iteration>
+            </lightning:layout>
+<!--            <ul class="slds-has-dividers_bottom-space">-->
+<!--                <aura:iteration items="{!v.credits.cast_Z}" var="movie">-->
+<!--                    <li class="slds-item">-->
+<!--                        <lightning:tile label="{!movie.title}">-->
+<!--                            <aura:set attribute="media">-->
+<!--                                <img onclick="{!c.goToMovie}" data-id="{!movie.id}"-->
+<!--                                     src="{!if(movie.poster_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+movie.poster_path)}"-->
+<!--                                     style="height: auto;max-width: 100px" alt="Missing Pic"/>-->
+
+<!--                                &lt;!&ndash;                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>&ndash;&gt;-->
+<!--                            </aura:set>-->
+<!--                            <ul class="slds-vertical ">-->
+<!--                                <li class="slds-item">Character: {!movie.character}</li>-->
+<!--                                <li class="slds-item">Date: {!movie.release_date}</li>-->
+<!--                            </ul>-->
+<!--                        </lightning:tile>-->
+<!--                    </li>-->
+<!--                </aura:iteration>-->
+<!--            </ul>-->
+        </lightning:tab>
+        <lightning:tab label="Reviews">
+        </lightning:tab>
+<!--        <lightning:tab label="Crew">-->
+<!--            <lightning:layout multipleRows="true">-->
+
+<!--                <aura:iteration items="{!v.credits.crew}" var="movie">-->
+<!--                    <lightning:layoutItem flexibility="auto" padding="around-small" size="4">-->
+<!--                        <div class="custom-box">-->
+<!--                            <lightning:tile label="{!movie.title}">-->
+<!--                                <aura:set attribute="media">-->
+<!--                                    <img onclick="{!c.goToMovie}" data-id="{!movie.id}"-->
+<!--                                         src="{!if(movie.poster_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+movie.poster_path)}"-->
+<!--                                         style="height: auto;max-width: 100px" alt="Missing Pic"/>-->
+
+<!--                                    &lt;!&ndash;                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>&ndash;&gt;-->
+<!--                                </aura:set>-->
+<!--                                <ul class="slds-vertical ">-->
+<!--                                    <li class="slds-item">Character: {!movie.character}</li>-->
+<!--                                    <li class="slds-item">Date: {!movie.release_date}</li>-->
+<!--                                </ul>-->
+<!--                            </lightning:tile>-->
+<!--                        </div>-->
+<!--                    </lightning:layoutItem>-->
+<!--                </aura:iteration>-->
+<!--            </lightning:layout>-->
+<!--        </lightning:tab>-->
+    </lightning:tabset>
+</aura:component>

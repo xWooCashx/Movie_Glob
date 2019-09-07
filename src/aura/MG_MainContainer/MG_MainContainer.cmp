@@ -1,0 +1,198 @@
+<!--
+ - Created by BRITENET on 02.09.2019.
+ -->
+
+<aura:component description="MG_MainContainer" controller="MG_MainContainerController"
+                implements="flexipage:availableForAllPageTypes">
+    <aura:attribute name="movieResults" type="MG_MovieResults.Results[]" default=""/>
+    <aura:attribute name="popularMovies" type="MG_MovieResults.Results[]" default=""/>
+    <aura:attribute name="personResults" type="MG_PeopleResults.Results[]" default=""/>
+    <aura:attribute name="mediaType" type="String" default="Popular Movies"/>
+    <aura:attribute name="id" type="String" default=""/>
+    <aura:attribute name="query" type="String" access="private"/>
+    <aura:attribute type="String" name="sortBy" default=""/>
+    <aura:attribute type="Integer" name="sortedI" default="1"/>
+    <aura:attribute type="Integer" name="pageIndex"/>
+    <aura:attribute type="Integer" name="total_pages"/>
+    <aura:handler event="c:MG_FindResult" action="{!c.showResults}"/>
+    <aura:handler event="c:MG_SortResults" action="{!c.sortResults}"/>
+    <aura:handler event="c:MG_ShowPerson" action="{!c.showPerson}"/>
+    <aura:handler event="c:MG_ShowMovie" action="{!c.showMovie}"/>
+    <aura:handler event="c:MG_ShowMovieFromRandom" action="{!c.showMovieFromRandom}"/>
+    <aura:handler name="showPersonFromCast" event="c:MG_ShowPersonFromCast" action="{!c.showPersonFromCast}"/>
+    <aura:handler name="showMovieFromCast" event="c:MG_ShowMovieFromCast" action="{!c.showMovieFromCast}"/>
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    <aura:attribute type="Boolean" name="isLoading" default="false"/>
+    <aura:if isTrue="{!v.isLoading}">
+        <lightning:spinner alternativeText="Loading" size="large"/>
+    </aura:if>
+    <lightning:card title="{!v.mediaType}">
+
+        <aura:if isTrue="{! and(!empty(v.movieResults),v.mediaType=='Movies')}">
+
+            <aura:if isTrue="{!v.id==''}">
+                <ui:scrollerWrapper class="scrollerSize">
+                    <div onmouseup="{!c.changePage}">
+                        <lightning:slider min="1" value="{!v.pageIndex}" max="{!v.total_pages}"
+                                          variant="label-hidden"/>
+                    </div>
+                    <lightning:layout multipleRows="true">
+                        <aura:iteration items="{!v.movieResults}" var="movie">
+                            <lightning:layoutItem flexibility="auto" padding="around-small" size="6">
+
+                                <lightning:tile label="{!movie.title}">
+                                    <aura:set attribute="media">
+                                        <aura:if isTrue="{!movie.isBlackListed}">
+                                            <img
+                                                    src="{!$Resource.BlockedContent}"
+                                                    style="height: auto;max-width: 170px" alt="Missing Pic"/>
+                                        </aura:if>
+                                        <aura:if isTrue="{!!movie.isBlackListed}">
+                                            <aura:if isTrue="{!movie.fromDB}">
+<!--                                                <img onclick="{!c.goToMovie}" data-id="{!movie.id}"-->
+<!--                                                     src="{!if(movie.poster_path==null,$Resource.MG_DefaultImage,'/servlet/servlet.FileDownload?file='+movie.poster_path)}"-->
+<!--                                                     style="height: auto;max-width: 170px" alt="Missing Pic"/>-->
+                                                <img onclick="{!c.goToMovie}" data-id="{!movie.id}"
+                                                     src="{!if(movie.poster_path==null,$Resource.MG_DefaultImage,'https://britenet-training-apps-dev-ed.lightning.force.com/sfc/servlet.shepherd/version/download/'+movie.poster_path)}"
+                                                     style="height: auto;max-width: 170px" alt="Missing Pic"/>
+                                            </aura:if>
+                                            <aura:if isTrue="{!!movie.fromDB}">
+                                                <img onclick="{!c.goToMovie}" data-id="{!movie.id}"
+                                                     src="{!if(movie.poster_path==null,$Resource.MG_DefaultImage,if(movie.fromDB==true,movie.poster_path,'https://image.tmdb.org/t/p/w500'+movie.poster_path))}"
+                                                     style="height: auto;max-width: 170px" alt="Missing Pic"/>
+                                            </aura:if>
+                                        </aura:if>
+                                        <!--                                    <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+movie.poster_path}" alternativeText="Lexee L. Jackson"/>-->
+                                    </aura:set>
+                                    <ul class="slds-list--vertical">
+                                        <li class="slds-item">Release Date: {!movie.release_date}</li>
+                                        <li class="slds-item">Popularity: {!movie.popularity}</li>
+                                        <li class="slds-item">User score:
+                                            <c:MG_FiveStarRating value="{!movie.vote_average}" readonly="{!true}"/>
+                                        </li>
+                                        <li class="slds-item slds-chat-message__text">{!movie.overview}</li>
+
+                                    </ul>
+                                </lightning:tile>
+                            </lightning:layoutItem>
+                        </aura:iteration>
+                    </lightning:layout>
+                    <!--                    >-->
+                    <!--                    <ul class="slds-has-dividers_bottom-space">-->
+                    <!--                        <aura:iteration items="{!v.movieResults}" var="movie">-->
+                    <!--                            <li class="slds-item">-->
+                    <!--                                <lightning:tile label="{!movie.title}">-->
+                    <!--                                    <aura:set attribute="media">-->
+                    <!--                                        <img onclick="{!c.goToMovie}" data-id="{!movie.id}"-->
+                    <!--                                             src="{!if(movie.poster_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+movie.poster_path)}"-->
+                    <!--                                             style="height: auto;max-width: 170px" alt="Missing Pic"/>-->
+                    <!--                                        &lt;!&ndash;                                    <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+movie.poster_path}" alternativeText="Lexee L. Jackson"/>&ndash;&gt;-->
+                    <!--                                    </aura:set>-->
+                    <!--                                    <ul class="slds-list&#45;&#45;vertical">-->
+                    <!--                                        <li class="slds-item slds-chat-message__text">{!movie.overview}</li>-->
+                    <!--                                        <li class="slds-item">Release Date: {!movie.release_date}</li>-->
+                    <!--                                        <li class="slds-item">Popularity: {!movie.popularity}</li>-->
+                    <!--                                        <li class="slds-item">User score:-->
+                    <!--                                            <c:MG_FiveStarRating value="{!movie.vote_average}" readonly="{!true}"/>-->
+                    <!--                                        </li>-->
+                    <!--                                    </ul>-->
+                    <!--                                </lightning:tile>-->
+                    <!--                            </li>-->
+                    <!--                        </aura:iteration>-->
+                    <!--                    </ul>-->
+
+                </ui:scrollerWrapper>
+                <div onmouseup="{!c.changePage}">
+                    <lightning:slider min="1" value="{!v.pageIndex}" max="{!v.total_pages}"
+                                      variant="label-hidden"/>
+                </div>
+            </aura:if>
+            <aura:if isTrue="{!v.id!=''}">
+                <c:MG_MovieDetails id="{!v.id}"/>
+            </aura:if>
+        </aura:if>
+        <aura:if isTrue="{!and(!empty(v.personResults) ,v.mediaType=='People') }">
+            <aura:if isTrue="{!v.id==''}">
+
+                <div onmouseup="{!c.changePage}">
+                    <lightning:slider min="1" value="{!v.pageIndex}" max="{!v.total_pages}" variant="label-hidden"
+                    />
+                </div>
+                <ui:scrollerWrapper class="scrollerSize">
+                    <ul class="slds-has-dividers_bottom-space">
+                        <aura:iteration items="{!v.personResults}" var="person">
+                            <li class="slds-item">
+                                <lightning:tile label="{!person.name}">
+                                    <aura:set attribute="media">
+                                        <img onclick="{!c.goToPerson}" data-id="{!person.id}"
+                                             src="{!if(person.profile_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+person.profile_path)}"
+                                             style="height: auto;max-width: 170px" alt="Missing Pic"/>
+
+                                        <!--                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>-->
+                                    </aura:set>
+                                    <ul class="slds-vertical ">
+                                        <li class="slds-item">Popularity: {!person.popularity}</li>
+                                        <li class="slds-item">Known for ({!person.known_for.length}):
+                                            <ul class="slds-list_horizontal slds-has-dividers_right">
+                                                <aura:iteration var="movie" items="{!person.known_for}">
+                                                    <li class="slds-item">
+                                                        <aura:if isTrue="{! !empty(movie.title)}">
+                                                            <a onclick="{!c.goToMovie}"
+                                                               data-id="{!movie.id}"> {!movie.title}</a></aura:if>
+                                                        <aura:if isTrue="{!!empty(movie.name)}">{!movie.name}
+                                                        </aura:if>
+                                                    </li>
+                                                </aura:iteration>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </lightning:tile>
+                            </li>
+                        </aura:iteration>
+                    </ul>
+                </ui:scrollerWrapper>
+                <div onmouseup="{!c.changePage}">
+                    <lightning:slider min="1" value="{!v.pageIndex}" max="{!v.total_pages}"
+                                      variant="label-hidden"/>
+                </div>
+
+            </aura:if>
+            <aura:if isTrue="{!v.id!=''}">
+                <c:MG_PersonDetails id="{!v.id}"/>
+            </aura:if>
+        </aura:if>
+
+        <aura:if isTrue="{! and(!empty(v.popularMovies),v.mediaType=='Popular Movies')}">
+            <lightning:layout multipleRows="true">
+                <aura:iteration items="{!v.popularMovies}" var="movie">
+                    <lightning:layoutItem flexibility="auto" padding="around-small" size="3">
+                        <div class="custom-box">
+                            <lightning:tile>
+                                <aura:set attribute="media">
+                                    <aura:if isTrue="{!movie.isBlackListed}">
+                                        <img
+                                                src="{!$Resource.BlockedContent}"
+                                                style="height: auto;max-width: 220px;transform:0%,25%"
+                                                alt="Missing Pic"/>
+                                    </aura:if>
+
+                                    <aura:if isTrue="{!!movie.isBlackListed}">
+                                        <img onclick="{!c.goToMovie}" data-id="{!movie.id}"
+                                             src="{!if(movie.poster_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+movie.poster_path)}"
+                                             style="height: auto;max-width: 220px" alt="Missing Pic"/>
+
+                                    </aura:if>
+                                    <!--                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>-->
+                                </aura:set>
+                            </lightning:tile>
+                        </div>
+                    </lightning:layoutItem>
+                </aura:iteration>
+            </lightning:layout>
+        </aura:if>
+
+        <aura:if isTrue="{! and(!empty(v.popularMovies),v.mediaType=='Account')}">
+            <c:MG_AccountDetails/>
+        </aura:if>
+    </lightning:card>
+</aura:component>

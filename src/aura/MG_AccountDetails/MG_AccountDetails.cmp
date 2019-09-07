@@ -1,0 +1,165 @@
+<!--
+ - Created by BRITENET on 05.09.2019.
+ -->
+
+<aura:component description="MG_AccountDetails" controller="MG_MainContainerController">
+    <aura:attribute type="MG_MovieDetails" name="favourites"/>
+    <aura:attribute type="MG_MovieDetails" name="blacklisted"/>
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    <aura:attribute name="reviews" type="MG_MovieReview__c[]" default=""/>
+    <aura:registerEvent name="showMovieFromRandom" type="c:MG_ShowMovieFromRandom"/>
+    <aura:attribute type="Boolean" name="isLoading" default="false"/>
+    <aura:if isTrue="{!v.isLoading}">
+        <lightning:spinner alternativeText="Loading" size="large"/>
+    </aura:if>
+    <lightning:tabset>
+        <lightning:tab label="Favourites">
+            <lightning:layout multipleRows="true">
+                <aura:iteration items="{!v.favourites}" var="movie">
+                    <lightning:layoutItem flexibility="auto" padding="around-small" size="2">
+                        <div class="custom-box">
+                            <lightning:tile label="">
+                                <aura:set attribute="media">
+                                    <div class="container">
+                                        <img class='image'
+                                             src="{!if(movie.poster_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+movie.poster_path)}"
+                                             style="height: auto;max-width: 100px" alt="Missing Pic"/>
+                                        <div class="middle" onclick="{!c.removeFromLike}" data-id="{!movie.id}">
+                                            <div class="text">Remove</div>
+                                        </div>
+                                    </div>
+                                    <ul class="slds-list--vertical text" onclick="{!c.goToMovie}" data-id="{!movie.id}">
+                                        <li class="slds-item slds-section-title"><h1>{!movie.title}</h1></li>
+                                    </ul>
+                                    <!--                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>-->
+                                </aura:set>
+                            </lightning:tile>
+                        </div>
+                    </lightning:layoutItem>
+                </aura:iteration>
+            </lightning:layout>
+        </lightning:tab>
+        <lightning:tab label="BlackList">
+            <lightning:layout multipleRows="true">
+                <aura:iteration items="{!v.blacklisted}" var="movie">
+                    <lightning:layoutItem flexibility="auto" padding="around-small" size="2">
+                        <div class="custom-box">
+                            <lightning:tile label="">
+                                <aura:set attribute="media">
+                                    <div class="container">
+                                        <img class='image'
+                                             src="{!if(movie.poster_path==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+movie.poster_path)}"
+                                             style="height: auto;max-width: 100px" alt="Missing Pic"/>
+                                        <div class="middle" onclick="{!c.removeFromBlackList}" data-id="{!movie.id}">
+                                            <div class="text">Remove</div>
+                                        </div>
+                                    </div>
+                                    <ul class="slds-list--vertical text" onclick="{!c.goToMovie}" data-id="{!movie.id}">
+                                        <li class="slds-item slds-section-title"><h1>{!movie.title}</h1></li>
+                                    </ul>
+                                    <!--                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>-->
+                                </aura:set>
+                            </lightning:tile>
+                        </div>
+                    </lightning:layoutItem>
+                </aura:iteration>
+            </lightning:layout>
+        </lightning:tab>
+        <lightning:tab label="Reviews" onactive="{!c.loadReviews}">
+            <aura:if isTrue="{! not(empty(v.reviews))}">
+
+                <!--                <div class="slds-feed">-->
+                <!--                    &lt;!&ndash;                    <ul class="slds-feed__list">&ndash;&gt;-->
+                <!--                    <table class="slds-table  ">-->
+                <!--                        <tbody>-->
+                <!--                    <aura:iteration items="{!v.reviews}" var="review">-->
+                <!--                        <tr class="slds-hint-parent slds-feed__item">-->
+
+                <!--                        &lt;!&ndash;                            <li class="slds-feed__item" >&ndash;&gt;-->
+                <!--                        <article class="slds-post">-->
+
+                <!--                        <div class="custom-box">-->
+                <!--                                <lightning:tile label="{!review.CreatedDate}">-->
+                <!--                                    <aura:set attribute="media">-->
+                <!--                                        <img onclick="{!c.goToMovie}" data-id="{!review.Movie_Id__c}"-->
+                <!--                                             src="{!if(review.Image_Path__c==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+review.Image_Path__c)}"-->
+                <!--                                             style="height: auto;max-width: 100px" alt="Missing Pic"/>-->
+
+                <!--                                        &lt;!&ndash;                            <lightning:avatar size="large" src="{!'https://image.tmdb.org/t/p/w500'+person.profile_path}" alternativeText="Lexee L. Jackson"/>&ndash;&gt;-->
+                <!--                                    </aura:set>-->
+                <!--                                    <ul class="slds-vertical ">-->
+
+                <!--                                        <li class="slds-item">-->
+                <!--                                            <h3 class="slds-text-heading_small">{!review.Name}</h3></li>-->
+                <!--                                        <li class="slds-item">-->
+                <!--                                            <c:MG_FiveStarRating value="{!review.Rating__c}" readonly="{!true}"/>-->
+                <!--                                        </li>-->
+                <!--                                        <li class="slds-item">-->
+                <!--                                            <lightning:formattedRichText value="{!review.Comment__c}"/>-->
+                <!--                                        </li>-->
+                <!--                                    </ul>-->
+                <!--                                </lightning:tile>-->
+                <!--                            </div>-->
+                <!--                            <div class="slds-post__content slds-text-longform">-->
+                <!--                                <h3 class="slds-text-heading_small">{!review.Name}</h3>-->
+                <!--                                <lightning:formattedRichText value="{!review.Comment__c}"/>-->
+                <!--                            </div>-->
+                <!--                            <footer class="slds-post__footer">-->
+                <!--                                <ul class="slds-post__footer-actions-list slds-list_horizontal">-->
+                <!--                                    <li class="slds-col slds-item slds-m-right_medium">-->
+                <!--                                    </li>-->
+                <!--                                </ul>-->
+                <!--                            </footer>-->
+                <!--                        </article>-->
+                <!--                            &lt;!&ndash;                            </li>&ndash;&gt;-->
+                <!--                        </tr>-->
+                <!--                    </aura:iteration>-->
+                <!--                        </tbody>-->
+                <!--                    </table>-->
+                <!--                    &lt;!&ndash;                    </ul>&ndash;&gt;-->
+                <!--                </div>-->
+                <div class="slds-feed">
+                    <!--                    <ul class="slds-feed__list">-->
+                    <table class="slds-table  ">
+                        <tbody>
+                        <aura:iteration items="{!v.reviews}" var="review">
+                            <tr class="slds-hint-parent slds-feed__item " >
+
+                                <!--                            <li class="slds-feed__item" >-->
+                                <article class="slds-post slds-box_border slds-p-around_medium ">
+                                    <header class="slds-post__header slds-media">
+                                        <div class="slds-media__figure">
+                                            <a href="javascript:void(0);"
+                                               class="slds-avatar  slds-avatar_large">
+                                                <img onclick="{!c.goToMovie}" data-id="{!review.Movie_Id__c}"
+                                                     src="{!if(review.Image_Path__c==null,$Resource.MG_DefaultImage,'https://image.tmdb.org/t/p/w500'+review.Image_Path__c)}"
+                                                     style="height: auto;max-width: 100px" alt="Missing Pic"/>
+                                            </a>
+                                        </div>
+                                        <div class="slds-media__body">
+                                            <div class="slds-grid slds-grid_align-spread slds-has-flexi-truncate">
+                                                <p>
+                                                    <lightning:formattedDateTime value="{!review.CreatedDate}"/>
+                                                </p>
+                                            </div>
+                                            <p class="slds-text-body_small">
+                                                <c:MG_FiveStarRating value="{!review.Rating__c}" readonly="{!true}"/>
+                                            </p>
+                                        </div>
+
+                                    </header>
+                                    <div class="slds-post__content slds-text-longform">
+                                        <lightning:formattedRichText value="{!review.Comment__c}"/>
+                                    </div>
+                                </article>
+                                <!--                            </li>-->
+                            </tr>
+                        </aura:iteration>
+                        </tbody>
+                    </table>
+                    <!--                    </ul>-->
+                </div>
+            </aura:if>
+        </lightning:tab>
+    </lightning:tabset>
+</aura:component>

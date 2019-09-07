@@ -1,0 +1,63 @@
+<!--
+ - Created by BRITENET on 02.09.2019.
+ -->
+
+<aura:component description="MG_LeftSideBar" implements="flexipage:availableForAllPageTypes" controller="MG_MainContainerController">
+    <aura:attribute name="issearching" type="Boolean" default="false"/>
+    <aura:attribute name="selectedMedia" type="String" default="movie"/>
+    <aura:attribute name="query" type="String" default=""/>
+    <aura:attribute name="modalIsOpen" type="boolean" default="false"/>
+
+    <aura:registerEvent name="findResults" type="c:MG_FindResult"/>
+
+    <c:MG_AddMovieModal isOpen="{!v.modalIsOpen}"/>
+    <lightning:card title="Navbar">
+        <div class="c-container">
+            <lightning:layout horizontalAlign="space" multipleRows="true">
+                <lightning:layoutItem size="1" padding="horizontal-medium">
+                    <div onclick="{!c.showHome}" style="cursor:pointer">
+                        <lightning:badge label="Home"/>
+                    </div>
+                </lightning:layoutItem>
+                <lightning:layoutItem size="1" padding="horizontal-medium">
+                    <div onclick="{!c.showAccount}" style="cursor:pointer">
+                        <lightning:badge label="Account"/>
+                    </div>
+                </lightning:layoutItem>
+                <lightning:layoutItem size="1" padding="horizontal-medium">
+                    <div style="cursor:pointer" onclick="{!c.showModalNewMovie}">
+                        <lightning:badge label="Add movie"/>
+                    </div>
+                </lightning:layoutItem>
+                <lightning:layoutItem size="4" alignmentBump="left" padding="horizontal-medium">
+                    <lightning:layout>
+                        <lightning:layoutItem size="10">
+                            <div onkeyup="{! c.handleKeyUp }">
+                                <lightning:input messageWhenValueMissing="Enter some phrase."
+                                                 placeholder="Enter searched phrase"
+                                                 aura:id="enter-search"
+                                                 name="enter-search"
+                                                 label="Search for:" value="{!v.query}"
+                                                 isLoading="{! v.issearching }"
+                                                 type="search" variant="label-hidden"
+                                />
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="2">
+                            <lightning:buttonMenu aura:id="menu" alternativeText="Show menu"
+                                                  onselect="{! c.handleSelect }">
+                                <lightning:menuItem aura:id="menuItems" label="Movie" value="movie"
+                                                    checked="true" iconName="utility:preview"/>
+                                <lightning:menuItem aura:id="menuItems" label="Person" value="person"
+                                                    checked="false" iconName="utility:user"/>
+                            </lightning:buttonMenu>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:layoutItem>
+                <lightning:layoutItem size="1">
+                </lightning:layoutItem>
+            </lightning:layout>
+        </div>
+    </lightning:card>
+
+</aura:component>

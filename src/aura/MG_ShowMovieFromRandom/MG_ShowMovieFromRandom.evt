@@ -1,0 +1,7 @@
+<!--
+ - Created by BRITENET on 04.09.2019.
+ -->
+
+<aura:event type="APPLICATION" description="MG_ShowMovieFromRandom">
+    <aura:attribute type="String" name="movieId"/>
+</aura:event>
